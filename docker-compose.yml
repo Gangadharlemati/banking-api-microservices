@@ -1,0 +1,46 @@
+
+
+services:
+  # This defines our PostgreSQL service
+  postgres-db:
+    image: postgres:14-alpine # Using a lightweight 'alpine' version is efficient
+    container_name: postgres-db
+    ports:
+      # This exposes the container's port 5432 to your machine's port 5432.
+      # This is how DBeaver will connect to it.
+      - "5432:5432"
+    environment:
+      # These are the credentials Spring Boot will use to connect.
+      # IMPORTANT: The POSTGRES_DB variable tells the Postgres image to automatically create this database on its first startup.
+      - POSTGRES_DB=user_service_db
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mypassword
+    volumes:
+      # This ensures our data is persistent.
+      - postgres-user-service-data:/var/lib/postgresql/data
+
+  user-service:
+    # This 'build' instruction tells Docker Compose to build an image
+    # using the Dockerfile in the current directory ('.').
+    build: .
+    container_name: user-service
+    ports:
+      # Map port 8081 on your machine to port 8081 in the container.
+      - "8081:8081"
+    environment:
+      # This is the most important part!
+      # We are OVERRIDING the 'spring.datasource.url' from application.properties.
+      # Inside the Docker network, the app will connect to the database using its
+      # service name 'postgres-db', not 'localhost'.
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/user_service_db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=mypassword
+    depends_on:
+      # This tells Docker Compose to start the 'postgres-db' container
+      # BEFORE it starts the 'user-service' container.
+      - postgres-db
+
+# This declares the named volume to Docker.
+volumes:
+  postgres-user-service-data:
+    driver: local
