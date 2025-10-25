@@ -4,10 +4,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 /**
@@ -32,11 +36,33 @@ public class SecurityConfig{
      */
 
 
+    private final AuthTokenFilter authTokenFilter;
+
+    public SecurityConfig(AuthTokenFilter authTokenFilter) {
+        this.authTokenFilter = authTokenFilter;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
+
+
+    /**
+     * Exposes the AuthenticationManager as a Bean to be used in other parts of the application.
+     * The AuthenticationManager is the core of Spring Security's authentication mechanism.
+     * It uses the configured UserDetailsService and PasswordEncoder to process authentication requests.
+     *
+     * @param authConfig The authentication configuration.
+     * @return An AuthenticationManager instance.
+     * @throws Exception if an error occurs while retrieving the manager.
+     */
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
 
 
     /**
@@ -49,7 +75,7 @@ public class SecurityConfig{
      */
 
 
-
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         // Disable CSRF (Cross-Site Request Forgery) protection.
@@ -68,10 +94,12 @@ public class SecurityConfig{
         http.authorizeHttpRequests(
 
                 auth -> auth   // Permit all requests to the authentication endpoints (e.g., /api/auth/register, /api/auth/login).
-                        .requestMatchers("api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         // Require authentication for any other request.
                         .anyRequest().authenticated()
         );
+
+        http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
 

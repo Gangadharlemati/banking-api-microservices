@@ -9,6 +9,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import com.bankingapp.user_service.dto.LoginRequest;
+
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,16 +32,19 @@ public class AuthService{
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
 
     public AuthService(
             UserRepository userRepository,
             RoleRepository roleRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager
     ){
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
     }
 
 
@@ -84,6 +93,33 @@ public class AuthService{
 
         userRepository.save(user);  // provided by jpa
 
+    }
+
+
+
+    /**
+     * Authenticates a user based on their login credentials.
+     *
+     * @param loginRequest DTO containing the user's email and password.
+     * @return An Authentication object containing the user's details upon successful authentication.
+     */
+    public Authentication authenticateUser(LoginRequest loginRequest) {
+        // The AuthenticationManager will use the UserDetailsService and PasswordEncoder
+        // to validate the credentials.
+        // If the credentials are bad, it will throw an AuthenticationException.
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getEmail(),
+                        loginRequest.getPassword()
+                )
+        );
+
+        // If authentication is successful, the returned Authentication object will be populated
+        // with the user's details (the User object) and their authorities (roles).
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // For now, we return the authentication object. Later, we'll use this to generate a JWT.
+        return authentication;
     }
 
 }
