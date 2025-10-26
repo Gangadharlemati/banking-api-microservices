@@ -103,6 +103,13 @@ public class AuthTokenFilter extends OncePerRequestFilter{
 
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request){
+        String path = request.getRequestURI();
+        return path.startsWith("/api/auth/");
+    }
+
+
     /**
      * A helper method to extract the JWT token from the "Authorization" header.
      *

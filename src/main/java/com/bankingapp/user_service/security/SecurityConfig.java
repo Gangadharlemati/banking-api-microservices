@@ -36,10 +36,14 @@ public class SecurityConfig{
      */
 
 
-    private final AuthTokenFilter authTokenFilter;
 
-    public SecurityConfig(AuthTokenFilter authTokenFilter) {
-        this.authTokenFilter = authTokenFilter;
+
+    private final UserDetailsServiceImpl userDetailsService;
+    private final JwtUtils jwtUtils;
+
+    public SecurityConfig(UserDetailsServiceImpl userDetailsService, JwtUtils jwtUtils) {
+        this.userDetailsService = userDetailsService;
+        this.jwtUtils = jwtUtils;
     }
 
     @Bean
@@ -62,6 +66,12 @@ public class SecurityConfig{
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
+    }
+
+
+    @Bean
+    public AuthTokenFilter authenticationJwtTokenFilter() {
+        return new AuthTokenFilter(jwtUtils, userDetailsService);
     }
 
 
@@ -99,7 +109,7 @@ public class SecurityConfig{
                         .anyRequest().authenticated()
         );
 
-        http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
 

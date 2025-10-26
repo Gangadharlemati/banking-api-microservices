@@ -1,35 +1,41 @@
 package com.bankingapp.user_service.dto;
-
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.List;
 
 
-/**
- * Data Transfer Object for sending user information back to the client.
- * This class carefully selects which fields to expose, ensuring sensitive data like
- * the password hash is never sent.
- */
 
 
+public class JwtResponse{
 
-public class UserInfoResponse{
-
+    private String token;
+    private String type = "Bearer";
     private Long id;
     private String firstName;
-    private String lastName;
     private String email;
     private List<String> roles;
 
-    public UserInfoResponse(Long id, String firstName, String lastName, String email, List<String> roles) {
+
+    public JwtResponse(String accessToken, Long id, String firstName, String email, List<String> roles){
+        this.token = accessToken;
         this.id = id;
         this.firstName = firstName;
-        this.lastName = lastName;
         this.email = email;
         this.roles = roles;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public Long getId() {
@@ -46,14 +52,6 @@ public class UserInfoResponse{
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 
     public String getEmail() {

@@ -1,9 +1,7 @@
 package com.bankingapp.user_service.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
+
 
 import org.springframework.security.core.GrantedAuthority;  //question
 import org.springframework.security.core.authority.SimpleGrantedAuthority; // question
@@ -12,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails; // question
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,9 +25,6 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name= "users")
-@Getter
-@Setter
-@NoArgsConstructor  //Required by JPA
 public class User implements UserDetails{
 
     @Id
@@ -72,6 +68,8 @@ public class User implements UserDetails{
 
     private Set<Role> roles = new HashSet<>();
 
+    public User() {
+    }
 
     // A convenience constructor for creating a user
     public User(String firstName, String lastName, String email, String password){
@@ -80,6 +78,22 @@ public class User implements UserDetails{
         this.email =email;
         this.password = password;
     }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public Set<Role> getRoles() { return roles; }
+    public void setRoles(Set<Role> roles) { this.roles = roles; }
+
+
+
+    // isEnabled has a special getter name
+    public void setEnabled(boolean enabled) { isEnabled = enabled; }
 
 
 
@@ -140,5 +154,22 @@ public class User implements UserDetails{
     public boolean isEnabled(){
         // Uses the isEnabled field from our entity.
         return this.isEnabled;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

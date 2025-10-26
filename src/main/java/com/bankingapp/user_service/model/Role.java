@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 /**
  * Represents a role that a user can have within the system (e.g., ROLE_USER, ROLE_ADMIN).
  * This is mapped to the "roles" table in the database.
@@ -13,9 +15,7 @@ import lombok.Setter;
 
 @Entity // Tells JPA that this class is an entity that should be mapped to a database
 @Table(name= "roles") // Specifies the name of the database table.
-@Getter // Lombok annotation to automatically generate getter methods for all fields.
-@Setter // Lombok annotation to automatically generate setter methods for all fields.
-@NoArgsConstructor // Lombok annotation to generate a no-argument constructor, which is required by JPA.
+
 public class Role{
 
     @Id  // Marks this field as the primary key.
@@ -41,9 +41,54 @@ public class Role{
         ROLE_ADMIN
     }
 
+    public Role() {
+    }
+
+    // adding cause lombok causing issues when debugging
+    public ERole getName() {
+        return this.name;
+    }
+
     // A convenience constructor to create a Role object from an ERole enum.
 
     public Role(ERole name){
         this.name = name;
     }
+
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+
+    public void setName(ERole name) {
+        this.name = name;
+    }
+
+    // It's also good practice to add equals(), hashCode(), and toString()
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Role role = (Role) o;
+        return Objects.equals(id, role.id) && name == role.name;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
+    }
+
+    @Override
+    public String toString() {
+        return "Role{" +
+                "id=" + id +
+                ", name=" + name +
+                '}';
+    }
+
 }
